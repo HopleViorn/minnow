@@ -22,6 +22,7 @@ void get_URL(const string& host, const string& path )
     cout<<response;
   }
 }
+
 int main( int argc, char* argv[] )
 {
   try {

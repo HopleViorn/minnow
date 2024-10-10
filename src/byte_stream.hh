@@ -26,12 +26,13 @@ public:
 protected:
   // Please add any additional state to the ByteStream here, and not to the Writer and Reader interfaces.
   deque<string> buffer {};
-  string_view view_wnd_ {};
+  string_view remain {};
+  uint64_t num_bytes_pushed {};
+  uint64_t num_bytes_popped {};
+  uint64_t num_bytes_buffered {};
+
   uint64_t capacity_ {};
-  uint64_t num_bytes_pushed_ {};
-  uint64_t num_bytes_popped_ {};
-  uint64_t num_bytes_buffered_ {};
-  bool is_closed_ {};
+  bool closed_ {};
   bool error_ {};
 };
 
