@@ -19,11 +19,11 @@ void Writer::push( string data )
     // 没事不要塞空字节字符串进去
     num_bytes_pushed_ += data.size();
     num_bytes_buffered_ += data.size();
-    bytes_.emplace( move( data ) );
+    buffer.push_back( move( data ) );
   }
   // 临界条件：pop 了所有字节导致队列为空且 view_wnd_ 为空
-  if ( view_wnd_.empty() && !bytes_.empty() )
-    view_wnd_ = bytes_.front();
+  if ( view_wnd_.empty() && !buffer.empty() )
+    view_wnd_ = buffer.front();
 }
 
 void Writer::close()
@@ -31,7 +31,7 @@ void Writer::close()
   if ( !is_closed_ ) {
     is_closed_ = true;
     // 防止重复关闭，然后不断塞入 EOF
-    bytes_.emplace( string( 1, EOF ) );
+    buffer.push_back( string( 1, EOF ) );
   }
 }
 
@@ -67,8 +67,8 @@ void Reader::pop( uint64_t len )
   while ( remainder >= view_wnd_.size() && remainder != 0 ) {
     // 不断清掉能从队列中 pop 出去的字节
     remainder -= view_wnd_.size();
-    bytes_.pop();
-    view_wnd_ = bytes_.empty() ? ""sv : bytes_.front();
+    buffer.pop_front();
+    view_wnd_ = buffer.empty() ? ""sv : buffer.front();
   }
   if ( !view_wnd_.empty() )
     view_wnd_.remove_prefix( remainder );
