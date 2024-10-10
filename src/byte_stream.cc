@@ -1,4 +1,5 @@
 #include "byte_stream.hh"
+#include <iostream>
 
 using namespace std;
 
@@ -16,12 +17,10 @@ void Writer::push( string data )
   if ( data.size() > available_capacity() )
     data.resize( available_capacity() );
   if ( !data.empty() ) {
-    // 没事不要塞空字节字符串进去
     num_bytes_pushed_ += data.size();
     num_bytes_buffered_ += data.size();
     buffer.push_back( move( data ) );
   }
-  // 临界条件：pop 了所有字节导致队列为空且 view_wnd_ 为空
   if ( view_wnd_.empty() && !buffer.empty() )
     view_wnd_ = buffer.front();
 }
@@ -30,7 +29,6 @@ void Writer::close()
 {
   if ( !is_closed_ ) {
     is_closed_ = true;
-    // 防止重复关闭，然后不断塞入 EOF
     buffer.push_back( string( 1, EOF ) );
   }
 }
@@ -47,7 +45,6 @@ uint64_t Writer::bytes_pushed() const
 
 bool Reader::is_finished() const
 {
-  // 当且仅当写者关闭、存在队列中未 pop 的字节数为 0
   return is_closed_ && bytes_buffered() == 0;
 }
 
@@ -65,7 +62,6 @@ void Reader::pop( uint64_t len )
 {
   auto remainder = len;
   while ( remainder >= view_wnd_.size() && remainder != 0 ) {
-    // 不断清掉能从队列中 pop 出去的字节
     remainder -= view_wnd_.size();
     buffer.pop_front();
     view_wnd_ = buffer.empty() ? ""sv : buffer.front();
