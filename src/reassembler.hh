@@ -58,13 +58,13 @@ public:
   // Access output stream writer, but const-only (can't write from outside)
   const Writer& writer() const { return output_.writer(); }
 
-private:
+  uint64_t get_head_index() const { return head_index; }
 
+private:
   set<Node> buffer {};
   uint64_t head_index {};
   uint64_t num_bytes_pending {};
   uint64_t last_index {};
-
 
   ByteStream output_; // the Reassembler writes to this ByteStream
 };

@@ -1,34 +1,83 @@
 Checkpoint 1 Writeup
 ====================
 
-My name: [your name here]
+My name: 卢郡然
 
-My SUNet ID: [your sunetid here]
+My SUNet ID: 502024330034
 
-I collaborated with: [list sunetids here]
+This lab took me about 4 hours to do. 
 
-I would like to thank/reward these classmates for their help: [list sunetids here]
 
-This lab took me about [n] hours to do. I [did/did not] attend the lab session.
 
-I was surprised by or edified to learn that: [describe]
+## Implementation of Reassembler
 
-Describe Reassembler structure and design. [Describe data structures and
-approach taken. Describe alternative designs considered or tested.
-Describe benefits and weaknesses of your design compared with
-alternatives -- perhaps in terms of simplicity/complexity, risk of
-bugs, asymptotic performance, empirical performance, required
-implementation time and difficulty, and other factors. Include any
-measurements if applicable.]
+#### Program Structure and Design
 
-Implementation Challenges:
-[]
+This task is easily solved by modeling it to a sliding window. Noting a `head_index` and see if the current buffer reaches this `head_index` is an easy way to implement a reassembler.
 
-Remaining Bugs:
-[]
+But when it comes to counting `bytes_pending`, things get hard. The core problem is how to handle overlapping properly and efficiently, which is effort-paying.
 
-- Optional: I had unexpected difficulty with: [describe]
+I finally decide to convert the question into a interval union problem.
 
-- Optional: I think you could make this lab better by: [describe]
+The core idea is to maintaining non-overlapping intervals along the index axis. This is be implemented by leveraging `std:set`'s  ability to maintain ordered array and find elements, erase elements in $O(\log |S|)$ .
 
-- Optional: I'm not sure about: [describe]
+Specifically, the elements are 
+
+```C++
+struct Node{
+  uint64_t index;
+  string data;
+  
+  Node(uint64_t i, string d): index(i), data(d) {}
+
+  bool operator < (const Node& other) const{
+    return index < other.index || (index == other.index && data.length() > other.data.length());
+  }
+};
+```
+
+which is ordered by `index`.
+
+When a new interval $x$ is trying to insert into the set. It is required to maintain the non-overlapping state. The detailed process is shown below:
+
+1. Check intervals which have small left end to  $x$. Shrink the left bound of $x$ if overlapping happens.
+2. Check intervals which have equal or greater left end to $x$. Delete existing intervals that fully included by $x$. Shrink right bound of $x$ if the right-most interval has overlaps.
+
+![image-20241010233429240](check1.assets/image-20241010233429240.png)
+
+The `btytes_pending` is counted during the process.
+
+All operations above is supported by `std::set`, which contains:1. `set::lower_bound()` to find the corresponding intervals. `set::erase()` to delete intervals.
+
+The find and erase operation has a logarithmic complexity, and the iteration to erase fully included intervals happens to each interval once at most. So the overall time complexity is $O(\log|S|)$.
+
+#### Challenges and Difficulties
+
+The definition of `is_last_substring` is ambitious, which is not mentioned in the document or startup codes.
+
+It really costs me a large mount of time to check the test case to find out the true meaning of the "last string".
+
+The method to handle "last string " is to find the last index. The index of the last character is fixed if the inputs are reasonable, which can be calculated by inputs labeling `is_last_substring = True` :
+
+```c++
+if(is_last_substring){
+    last_index = first_index + data.length();
+  }
+```
+
+When pushing index over this `last_index` the true ending is set and the output is closed.
+
+```C++
+if(head_index >= last_index){
+	writer.close();
+}
+```
+
+
+
+#### Experimental Results and Performance.
+
+![image-20241010234437494](check1.assets/image-20241010234437494.png)
+
+I think the performance may be reduced due to the frequent use of `string:substr()` which may lead to high copy cost.
+

@@ -26,5 +26,6 @@ public:
   const Writer& writer() const { return reassembler_.writer(); }
 
 private:
+  optional<Wrap32> ISN {};
   Reassembler reassembler_;
 };
