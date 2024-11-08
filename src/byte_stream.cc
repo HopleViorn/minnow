@@ -1,6 +1,6 @@
 #include "byte_stream.hh"
 #include <iostream>
-
+#define zxc(x) cerr<<(#x)<<'='<<(x)<<'\n'
 using namespace std;
 
 ByteStream::ByteStream( uint64_t capacity ) : capacity_( capacity ) {}
@@ -26,9 +26,10 @@ void Writer::push( string data )
 
 void Writer::close()
 {
+  zxc("CLOSE!");
   if ( !closed_ ) {
     closed_ = true;
-    buffer.push_back( string( 1, EOF ) );
+    // buffer.push_back( string( 1, EOF ) );
   }
 }
 

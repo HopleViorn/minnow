@@ -48,4 +48,17 @@ private:
   ByteStream input_;
   Wrap32 isn_;
   uint64_t initial_RTO_ms_;
+
+  bool established = false;
+  bool syn_acked = false;
+  bool timer_on = false;
+  bool send_fin = false;
+  bool finished = false;
+  uint64_t next_seqno = {};
+  uint64_t bytes_in_flight = {};
+  uint64_t cwnd = 1;
+  deque<TCPSenderMessage> buffered_messages = {};
+  uint64_t timer_ms = {};
+  uint64_t rto_multiplier = 1;
+  uint64_t retx_cnt = {};
 };
