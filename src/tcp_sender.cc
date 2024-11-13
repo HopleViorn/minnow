@@ -18,19 +18,15 @@ uint64_t TCPSender::consecutive_retransmissions() const
 
 void TCPSender::push( const TransmitFunction& transmit )
 {
-	zxc("send");
 	Reader &reader = input_.reader();
 
 	uint64_t pseudo_cwnd = cwnd == 0? 1: cwnd;
 	uint64_t max_size =  pseudo_cwnd < sequence_numbers_in_flight() ? 0: pseudo_cwnd - sequence_numbers_in_flight();
-	zxc(max_size);
 	
 	bool fin = reader.is_finished() && !finished;
-	zxc(Wrap32::wrap(next_seqno,isn_).raw_value());
 	if (reader.bytes_buffered() == 0){
 		TCPSenderMessage msg = make_empty_message();
 		if(!syn_sent){
-			zxc("---------------------------");
 			msg.SYN = true;
 			bytes_in_flight++;
 			next_seqno = next_seqno + 1;
@@ -43,9 +39,6 @@ void TCPSender::push( const TransmitFunction& transmit )
 			finished = true;
 		}
 		if(msg.FIN||msg.SYN){
-			zxc(msg.FIN);
-			zxc(msg.SYN);
-
 			transmit(msg);
 			buffered_messages.emplace_back(msg);
 			timer_on = true;
@@ -128,36 +121,14 @@ void TCPSender::receive( const TCPReceiverMessage& msg ){
 
 void TCPSender::tick( uint64_t ms_since_last_tick, const TransmitFunction& transmit )
 {
-	zxc(initial_RTO_ms_ * rto_multiplier);
 	if (!timer_on){
 		return ;
 	}
 	timer_ms += ms_since_last_tick;
-	zxc(timer_ms);
-	if(timer_ms >= initial_RTO_ms_ * rto_multiplier){
-		if(next_seqno == 1 &&!syn_acked){//retransmit SYN
-			TCPSenderMessage msg = {
-				.seqno = Wrap32::wrap(0 , isn_),
-				.SYN = true,
-				.payload = {},
-				.FIN = false,
-				.RST = false
-			};
-			transmit(msg);
-			// initial_RTO_ms_ = initial_RTO_ms_ * 2;
-			zxc(cwnd);
-			if(cwnd) rto_multiplier *= 2;
-			timer_ms = 0;
-			retx_cnt++;
-			return ;
-		}
-		if(buffered_messages.empty()){
-			return ;
-		}
+	if(timer_ms >= initial_RTO_ms_ * rto_multiplier && !buffered_messages.empty()){
 		TCPSenderMessage msg = buffered_messages.front();
 		retx_cnt++;
 		transmit(msg);
-		zxc(cwnd);
 		if(cwnd) rto_multiplier *= 2;
 		timer_ms = 0;
 	}

@@ -50,9 +50,7 @@ private:
   uint64_t initial_RTO_ms_;
 
   bool syn_sent = false;
-  bool syn_acked = false;
   bool timer_on = false;
-  bool send_fin = false;
   bool finished = false;
   uint64_t next_seqno = {};
   uint64_t bytes_in_flight = {};
