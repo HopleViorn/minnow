@@ -49,7 +49,7 @@ private:
   Wrap32 isn_;
   uint64_t initial_RTO_ms_;
 
-  bool established = false;
+  bool syn_sent = false;
   bool syn_acked = false;
   bool timer_on = false;
   bool send_fin = false;
