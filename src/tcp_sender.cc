@@ -231,11 +231,11 @@ TCPSenderMessage TCPSender::make_empty_message() const
 
 void TCPSender::receive( const TCPReceiverMessage& msg ){
 	zxc("receive");
+	cwnd = msg.window_size;
 	if(msg.ackno.has_value()){
 		uint64_t ack = msg.ackno.value().unwrap(isn_, next_seqno);
 		zxc(ack);
 		zxc(next_seqno);
-		cwnd = msg.window_size;
 		if(ack > next_seqno) return ;
 		while(!buffered_messages.empty() && ack >= buffered_messages.front().seqno.unwrap(isn_, next_seqno)+buffered_messages.front().payload.size()+buffered_messages.front().FIN + buffered_messages.front().SYN){
 			bytes_in_flight -= buffered_messages.front().payload.size();
@@ -249,7 +249,7 @@ void TCPSender::receive( const TCPReceiverMessage& msg ){
 				timer_on = false;
 			}
 		}
-
+		
 	}
 }
 
