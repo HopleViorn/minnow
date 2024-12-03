@@ -1,6 +1,7 @@
 #pragma once
 
 #include <queue>
+#include <map>
 
 #include "address.hh"
 #include "ethernet_frame.hh"
@@ -59,6 +60,8 @@ public:
   // Called periodically when time elapses
   void tick( size_t ms_since_last_tick );
 
+  void send_known();
+
   // Accessors
   const std::string& name() const { return name_; }
   const OutputPort& output() const { return *port_; }
@@ -81,4 +84,17 @@ private:
 
   // Datagrams that have been received
   std::queue<InternetDatagram> datagrams_received_ {};
+
+
+  // Map: IP address -> Ethernet address
+  std::map<uint32_t, EthernetAddress> arp_cache_ {};
+
+  // Map: IP address -> queued to send
+  std::map<uint32_t, std::deque<EthernetFrame> > send_queue_ {};
+
+  // Map: IP address -> time stamp
+  std::map<uint32_t, size_t> arp_time_stamp_ {};
+
+  //absolute time
+  size_t abs_time_ = 0;
 };
