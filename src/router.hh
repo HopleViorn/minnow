@@ -33,6 +33,7 @@ class Trie
 {
 public:
   TrieNode root;
+  
   void insert(RouteEntry prefix_order){
     TrieNode* node = &root;
     uint8_t prefix_length = prefix_order.prefix_length;
@@ -46,6 +47,7 @@ public:
     }
     node->prefix = prefix_order;
   }
+  
   std::optional<RouteEntry> match(uint32_t ip_address){
     TrieNode* node = &root;
     std::optional<RouteEntry> longest_match = std::nullopt;
@@ -54,13 +56,11 @@ public:
         longest_match = node->prefix;
       }
       bool bit = (ip_address >> i) & 1;
-      std::cerr<<bit<<'\n';
       if (node->children[bit] == nullptr) {
         return longest_match;
       }
       node = node->children[bit].get();
     }
-    std::cerr<<longest_match.has_value()<<"xxx\n";
     return longest_match;
   }
 };

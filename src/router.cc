@@ -23,14 +23,11 @@ void Router::add_route( const uint32_t route_prefix,
   _trie.insert(RouteEntry(route_prefix, prefix_length, next_hop, interface_num));
 }
 
-// Go through all the interfaces, and route every incoming datagram to its proper outgoing interface.
 void Router::route()
 { 
-  queue<InternetDatagram> test;
   for( auto& interface : _interfaces ) {
     while (!interface->datagrams_received().empty()) {
-      InternetDatagram& x = interface->datagrams_received().front();
-      match_and_route(x);
+      match_and_route(interface->datagrams_received().front());
       interface->datagrams_received().pop();
     }
   }
@@ -47,7 +44,7 @@ size_t Router::match_and_route(InternetDatagram& datagram) {
     return -1;
   }
   RouteEntry match_result = match_result_.value();
-  
+
   datagram.header.ttl--;
   datagram.header.compute_checksum();
   interface(match_result.interface_num)->send_datagram( datagram, match_result.next_hop.has_value()?match_result.next_hop.value():Address::from_ipv4_numeric(ip));
