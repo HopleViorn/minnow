@@ -71,6 +71,14 @@ class Host
 
   bool expecting( const InternetDatagram& expected ) const
   {
+    //print the difference between the expected and the received datagram
+    for ( const auto& x : _expecting_to_receive ) {
+      cerr << "Expected: " << x.header.to_string() << " payload=\"" << Printer::prettify( concat( x.payload ) )
+           << "\"\n";
+    }
+    cerr << "Received: " << expected.header.to_string() << " payload=\"" << Printer::prettify( concat( expected.payload ) )
+         << "\"\n";
+
     return ranges::any_of( _expecting_to_receive, [&expected]( const auto& x ) { return equal( x, expected ); } );
   }
 
